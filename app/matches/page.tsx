@@ -14,7 +14,7 @@ export default async function MatchesPage() {
   const data = await res.json();
   const matches = data.response || [];
 
-  // ✅ Simple prediction logic
+  // ✅ Prediction logic
   const getPrediction = (match: any) => {
     const home = match.goals.home ?? 0;
     const away = match.goals.away ?? 0;
@@ -23,6 +23,16 @@ export default async function MatchesPage() {
     if (away > home) return "Away Win";
     return "Draw";
   };
+
+  // ✅ Group by league
+  const groupedMatches = matches.reduce((acc: any, match: any) => {
+    const league = match.league.name;
+
+    if (!acc[league]) acc[league] = [];
+    acc[league].push(match);
+
+    return acc;
+  }, {});
 
   return (
     <main
@@ -40,68 +50,75 @@ export default async function MatchesPage() {
 
       {matches.length === 0 && <p>No live matches right now</p>}
 
-      {matches.map((match: any) => (
-        <div
-          key={match.fixture.id}
-          style={{
-            background: "#1e293b",
-            padding: "15px",
-            marginBottom: "15px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-          }}
-        >
-          {/* Teams */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              marginBottom: "10px",
-            }}
-          >
-            <img src={match.teams.home.logo} width={25} />
-            <span>{match.teams.home.name}</span>
+      {Object.entries(groupedMatches).map(([league, games]: any) => (
+        <div key={league} style={{ marginBottom: "30px" }}>
+          
+          {/* League Title */}
+          <h2 style={{ marginBottom: "10px", color: "#38bdf8" }}>
+            {league}
+          </h2>
 
-            <span style={{ opacity: 0.5 }}>vs</span>
+          {games.map((match: any) => (
+            <div
+              key={match.fixture.id}
+              style={{
+                background: "#1e293b",
+                padding: "15px",
+                marginBottom: "10px",
+                borderRadius: "12px",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+              }}
+            >
+              {/* Teams */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "8px",
+                }}
+              >
+                <img src={match.teams.home.logo} width={20} />
+                <span>{match.teams.home.name}</span>
 
-            <img src={match.teams.away.logo} width={25} />
-            <span>{match.teams.away.name}</span>
-          </div>
+                <span style={{ opacity: 0.5 }}>vs</span>
 
-          {/* Score */}
-          <p
-            style={{
-              fontSize: "18px",
-              fontWeight: "bold",
-              color:
-                match.goals.home > match.goals.away
-                  ? "lime"
-                  : match.goals.away > match.goals.home
-                  ? "red"
-                  : "orange",
-            }}
-          >
-            ⚽ {match.goals.home} - {match.goals.away}
-          </p>
+                <img src={match.teams.away.logo} width={20} />
+                <span>{match.teams.away.name}</span>
+              </div>
 
-          {/* Status */}
-          <p style={{ color: "#38bdf8" }}>
-            ⏱️ {match.fixture.status.elapsed}' ({match.fixture.status.short})
-          </p>
+              {/* Score */}
+              <p
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  color:
+                    match.goals.home > match.goals.away
+                      ? "lime"
+                      : match.goals.away > match.goals.home
+                      ? "red"
+                      : "orange",
+                }}
+              >
+                ⚽ {match.goals.home} - {match.goals.away}
+              </p>
 
-          {/* Live badge */}
-          <p style={{ color: "red", fontWeight: "bold" }}>🔴 LIVE</p>
+              {/* Time */}
+              <p style={{ color: "#38bdf8" }}>
+                ⏱️ {match.fixture.status.elapsed}' ({match.fixture.status.short})
+              </p>
 
-          {/* Prediction */}
-          <p style={{ color: "lime" }}>
-            Prediction: {getPrediction(match)}
-          </p>
+              {/* Live */}
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                🔴 LIVE
+              </p>
 
-          {/* League */}
-          <p style={{ opacity: 0.6, marginTop: "5px" }}>
-            {match.league.name}
-          </p>
+              {/* Prediction */}
+              <p style={{ color: "lime" }}>
+                Prediction: {getPrediction(match)}
+              </p>
+            </div>
+          ))}
         </div>
       ))}
     </main>
