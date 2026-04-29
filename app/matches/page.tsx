@@ -1,3 +1,4 @@
+if (!API_KEY) throw new Error("Missing API key");
 export default async function MatchesPage() {
   const API_KEY = process.env.API_KEY;
 
