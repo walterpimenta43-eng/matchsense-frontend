@@ -38,13 +38,21 @@ export default async function MatchesPage() {
             boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
           }}
         >
-          <p style={{ fontSize: "18px", fontWeight: "bold" }}>
-            {match.teams.home.name} vs {match.teams.away.name}
-          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+  <img src={match.teams.home.logo} width={25} />
+  <span>{match.teams.home.name}</span>
 
-          <p>
-            ⚽ {match.goals.home} - {match.goals.away}
-          </p>
+  <span>vs</span>
+
+  <img src={match.teams.away.logo} width={25} />
+  <span>{match.teams.away.name}</span>
+</div>
+
+          <p style={{ color: "red" }}>🔴 LIVE</p>
+
+<p style={{ color: "lime" }}>
+  Prediction: {Math.random() > 0.5 ? "Home Win" : "Away Win"}
+</p>
 
           <p style={{ color: "#38bdf8" }}>
             ⏱️ {match.fixture.status.short}
