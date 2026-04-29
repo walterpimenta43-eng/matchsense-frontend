@@ -1,10 +1,11 @@
-if (!API_KEY) throw new Error("Missing API key");
 export default async function MatchesPage() {
   const API_KEY = process.env.API_KEY;
 
+  if (!API_KEY) throw new Error("Missing API key");
+
   const res = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
     headers: {
-      "x-apisports-key": API_KEY as string,
+      "x-apisports-key": API_KEY,
     },
     cache: "no-store",
   });
