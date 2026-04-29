@@ -1,7 +1,7 @@
 export default async function MatchesPage() {
   const res = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
     headers: {
-      "x-apisports-key": process.env.API_KEY,
+      "x-apisports-key": process.env.API_KEY!,
     },
     cache: "no-store",
   });
