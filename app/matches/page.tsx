@@ -9,22 +9,40 @@ export default function MatchesPage() {
     <main style={{
       minHeight: "100vh",
       padding: "40px",
-      display: "flex",
-      flexDirection: "column",
-      gap: "20px"
+      background: "#0f172a",
+      color: "white",
+      fontFamily: "Arial"
     }}>
-      <h1>⚽ Matches</h1>
+      <h1 style={{ marginBottom: "30px" }}>⚽ Match Predictions</h1>
 
-      {matches.map((match, index) => (
-        <div key={index} style={{
-          padding: "15px",
-          border: "1px solid #ccc",
-          borderRadius: "10px"
-        }}>
-          <h3>{match.home} vs {match.away}</h3>
-          <p>Prediction: <strong>{match.prediction}</strong></p>
-        </div>
-      ))}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+        gap: "20px"
+      }}>
+        {matches.map((match, index) => (
+          <div key={index} style={{
+            background: "#1e293b",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
+          }}>
+            <h3 style={{ marginBottom: "10px" }}>
+              {match.home} vs {match.away}
+            </h3>
+
+            <p style={{ opacity: 0.8 }}>Prediction</p>
+
+            <p style={{
+              marginTop: "5px",
+              fontWeight: "bold",
+              color: "#22c55e"
+            }}>
+              {match.prediction}
+            </p>
+          </div>
+        ))}
+      </div>
     </main>
   );
 }
