@@ -1,79 +1,18 @@
-export default async function MatchesPage() {
-  const API_KEY = process.env.API_KEY;
+"use client";
 
-  const res = await fetch(
-    "https://v3.football.api-sports.io/fixtures?live=all",
-    {
-      headers: {
-        "x-apisports-key": API_KEY as string,
-      },
-      cache: "no-store",
-    }
-  );
+import { useEffect, useState } from "react";
 
-  const data = await res.json();
-  const matches = data.response || [];
+export default function MatchesPage() {
+  const [matches, setMatches] = useState<any[]>([]);
 
-  // 🔥 AI Prediction
-  const getPrediction = async (match: any) => {
-    try {
-      const league = match.league.id;
-      const season = match.league.season;
+  useEffect(() => {
+    fetch("/api/matches")
+      .then((res) => res.json())
+      .then((data) => setMatches(data));
+  }, []);
 
-      const standingsRes = await fetch(
-        `https://v3.football.api-sports.io/standings?league=${league}&season=${season}`,
-        {
-          headers: {
-            "x-apisports-key": API_KEY as string,
-          },
-          cache: "no-store",
-        }
-      );
-
-      const standingsData = await standingsRes.json();
-      const table = standingsData.response[0]?.league?.standings[0] || [];
-
-      const homeTeam = table.find(
-        (t: any) => t.team.id === match.teams.home.id
-      );
-      const awayTeam = table.find(
-        (t: any) => t.team.id === match.teams.away.id
-      );
-
-      if (homeTeam && awayTeam) {
-        const homePoints = homeTeam.points;
-        const awayPoints = awayTeam.points;
-
-        const total = homePoints + awayPoints;
-
-        const homeProb = Math.round((homePoints / total) * 100);
-        const awayProb = Math.round((awayPoints / total) * 100);
-
-        if (homeProb > awayProb)
-          return { type: "home", prob: homeProb };
-
-        if (awayProb > homeProb)
-          return { type: "away", prob: awayProb };
-
-        return { type: "draw", prob: 50 };
-      }
-
-      // fallback
-      const home = match.goals.home ?? 0;
-      const away = match.goals.away ?? 0;
-
-      if (home > away) return { type: "home", prob: 65 };
-      if (away > home) return { type: "away", prob: 65 };
-
-      return { type: "draw", prob: 50 };
-    } catch {
-      return { type: "draw", prob: 50 };
-    }
-  };
-
-  // 🎯 Convert probability → odds
-  const getOdds = (prob: number) => {
-    return (100 / prob).toFixed(2);
+  const placeBet = (team: string, odds: string) => {
+    alert(`Bet placed on ${team} @ ${odds}`);
   };
 
   return (
@@ -87,97 +26,71 @@ export default async function MatchesPage() {
     >
       <h1>🔥 Live Matches</h1>
 
-      {await Promise.all(
-        matches.map(async (match: any) => {
-          const prediction = await getPrediction(match);
+      {matches.length === 0 && <p>No live matches</p>}
 
-          const homeOdds = getOdds(
-            prediction.type === "home" ? prediction.prob : 30
-          );
-          const drawOdds = getOdds(
-            prediction.type === "draw" ? prediction.prob : 30
-          );
-          const awayOdds = getOdds(
-            prediction.type === "away" ? prediction.prob : 30
-          );
+      {matches.map((match: any) => {
+        const homeGoals = match.goals.home ?? 0;
+        const awayGoals = match.goals.away ?? 0;
 
-          return (
-            <div
-              key={match.fixture.id}
-              style={{
-                background: "#1e293b",
-                padding: "15px",
-                marginBottom: "15px",
-                borderRadius: "12px",
-              }}
-            >
-              {/* Teams */}
-              <p>
-                {match.teams.home.name} vs {match.teams.away.name}
-              </p>
+        let prediction = "Draw";
+        if (homeGoals > awayGoals) prediction = "Home Win";
+        if (awayGoals > homeGoals) prediction = "Away Win";
 
-              {/* Score */}
-              <p>
-                ⚽ {match.goals.home} - {match.goals.away}
-              </p>
+        const homeOdds = (1.5 + Math.random()).toFixed(2);
+        const drawOdds = (2 + Math.random()).toFixed(2);
+        const awayOdds = (1.5 + Math.random()).toFixed(2);
 
-              {/* Live */}
-              <p style={{ color: "red" }}>🔴 LIVE</p>
+        return (
+          <div
+            key={match.fixture.id}
+            style={{
+              background: "#1e293b",
+              padding: "15px",
+              marginBottom: "15px",
+              borderRadius: "12px",
+            }}
+          >
+            {/* Teams */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <img src={match.teams.home.logo} width={25} />
+              <span>{match.teams.home.name}</span>
 
-              {/* Odds Buttons */}
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  marginTop: "10px",
-                }}
-              >
-                <button
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    background: "#22c55e",
-                    border: "none",
-                    borderRadius: "8px",
-                    color: "black",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Home {homeOdds}
-                </button>
+              <span>vs</span>
 
-                <button
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    background: "#eab308",
-                    border: "none",
-                    borderRadius: "8px",
-                    color: "black",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Draw {drawOdds}
-                </button>
-
-                <button
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    background: "#ef4444",
-                    border: "none",
-                    borderRadius: "8px",
-                    color: "white",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Away {awayOdds}
-                </button>
-              </div>
+              <img src={match.teams.away.logo} width={25} />
+              <span>{match.teams.away.name}</span>
             </div>
-          );
-        })
-      )}
+
+            {/* Score */}
+            <p>⚽ {homeGoals} - {awayGoals}</p>
+
+            {/* Live */}
+            <p style={{ color: "red" }}>
+              🔴 {match.fixture.status.short}
+            </p>
+
+            {/* Prediction */}
+            <p style={{ color: "lime" }}>
+              Prediction: {prediction}
+            </p>
+
+            {/* Buttons */}
+            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+              <button onClick={() => placeBet("Home", homeOdds)}>
+                Home {homeOdds}
+              </button>
+
+              <button onClick={() => placeBet("Draw", drawOdds)}>
+                Draw {drawOdds}
+              </button>
+
+              <button onClick={() => placeBet("Away", awayOdds)}>
+                Away {awayOdds}
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </main>
   );
 }
